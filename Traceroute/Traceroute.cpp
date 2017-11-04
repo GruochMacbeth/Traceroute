@@ -71,7 +71,7 @@ Input:          PICMP_ECHO_REPLY pEchoReply 为得到的相应信息的存储结构
 Output:         打印pEchoReply中的相关信息，包括超时等
 Return:         false：已经到达目的地址，代表请求结束循环；true：还未到达目的地址，继续循环发送ICMP请求
 *************************************************/
-bool printEchoData(PICMP_ECHO_REPLY pEchoReply[], const char * destAddr)
+bool printEchoData(PICMP_ECHO_REPLY pEchoReply[], char * DestAddr)
 {
 	ReplyAddr.S_un.S_addr = pEchoReply[0]->Address;
 	bool result = true;
@@ -97,7 +97,7 @@ bool printEchoData(PICMP_ECHO_REPLY pEchoReply[], const char * destAddr)
 		}
 
 		//到达目的地址
-		if (!strcmp(destAddr, inet_ntoa(ReplyAddr)))
+		if (!strcmp(DestAddr, inet_ntoa(ReplyAddr)))
 		{
 			if (pEchoReply[i]->RoundTripTime == 0)
 			{
@@ -115,7 +115,7 @@ bool printEchoData(PICMP_ECHO_REPLY pEchoReply[], const char * destAddr)
 	if (pEchoReply[0]->Status == IP_REQ_TIMED_OUT)
 		printf("\t*\n");
 	else
-		printf("\t%s\tdest:%s\n", inet_ntoa(ReplyAddr), destAddr);
+		printf("\t%s\tdest:%s\n", inet_ntoa(ReplyAddr),DestAddr);
 
 	//还未到达目的地址，继续循环发送ICMP请求
 	return result;
@@ -152,6 +152,8 @@ void tracert(const char * destAddr)
 
 	PICMP_ECHO_REPLY pEchoReply[3];
 	bool over = false;
+	char * DestAddr = (char *)malloc(1024 * sizeof(char));
+	strcpy(DestAddr, destAddr);
 	while (1)
 	{
 		if (over)
@@ -175,7 +177,7 @@ void tracert(const char * destAddr)
 			pEchoReply[i] = (PICMP_ECHO_REPLY)ReplyBuffer;
 		}
 		//print
-		if (!printEchoData(pEchoReply, destAddr))
+		if (!printEchoData(pEchoReply,DestAddr))
 			break;
 	}
 	printf("跟踪完成。\n");
